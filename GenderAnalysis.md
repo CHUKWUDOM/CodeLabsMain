@@ -11,7 +11,7 @@ To run this code, you need the following libraries installed:
 
 ## Installation
 1. Clone this repository to your local machine:
-https://github.com/CHUKWUDOM/CodeLabs1
+https://github.com/CHUKWUDOM/CodeLabsMain
 2. Navigate to the project directory
    (_Quinter to give the project directory of the final work here_)
 3. Install the required [dependencies](requirements.txt): 
