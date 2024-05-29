@@ -5,39 +5,45 @@ import glob
 import json
 from constraints import *
 
-def read_excel(file_path, sheet_names):
-    """Read specified sheets from an Excel file and extract student names."""
-    sheets_data = [pd.read_excel(file_path, sheet_name=sheet) for sheet in sheet_names]
+def read_excel():
+    # We read data from the two sheets on excel
+    sheet_3b = pd.read_excel('C:\CodeLab\TestFiles.xlsx', sheet_name='3B')
+    sheet_3c = pd.read_excel('C:\CodeLab\TestFiles.xlsx', sheet_name='3C')
 
-    # Extract the column named 'Student Name' from both sheets and combine them
-    combined_names = pd.concat([sheet['Student Name'] for sheet in sheets_data], ignore_index=True)
+    # We extract the column named Student name from both sheets
+    sheet_3b_names = sheet_3b['Student Name']
+    sheet_3c_names = sheet_3c['Student Name']
 
-    # Split the names into first and other names
-    split_names = combined_names.str.split(expand=True)
+    # We combine both sheets containing the names into one
+    combined = pd.concat([sheet_3b_names, sheet_3c_names], ignore_index=True)
 
-    combined_df = pd.DataFrame()
-    combined_df['First Name'] = split_names[0]  # The first name
-    combined_df['Mid Name'] = split_names[1]  # Middle name
-    combined_df['Second Mid'] = split_names[2]  # Third name
-    combined_df['Last Name'] = split_names[3]  # Last Name
+    # We split the name into first and the other names
+    split_names = combined.str.split(expand=True)
 
-    return combined_df
+    combined['First Name'] = split_names[0]  # The first name
+    combined['Mid Name'] = split_names[1]    # Middle name
+    combined['Second Mid'] = split_names[2]  # Third name
+    combined['Last Name'] = split_names[3]   # Last Name
 
-def generate_emails(combined_df):
-    """Generate email addresses from the combined DataFrame of student names."""
-    first_letter = combined_df['First Name'].str[0]
-    mid_name = combined_df['Mid Name']
-    sec_mid_name = combined_df['Second Mid']
-    last_name = combined_df['Last Name']
+    first_name = combined['First Name']
+    mid_name = combined['Mid Name']
+    sec_mid_name = combined['Second Mid']
+    last_name = combined['Last Name']
+    # We get the first letter of the first name
+    first_letter = first_name.str[0]
 
-    emails = []
-    for first, mid, sec_mid, last in zip(first_letter, mid_name, sec_mid_name, last_name):
-        if pd.isna(last):
-            last = sec_mid if pd.notna(sec_mid) else mid
-        email = f"{first.lower()}{last.lower()}@gmail.com"
-        emails.append([email])
+    for first, mid, sec_mid_name,  last in zip(first_letter, mid_name, sec_mid_name, last_name):
+        if last is None:
+            last = sec_mid_name  # if the last name is not there, the third name becomes the last name
 
-    return emails
+            if sec_mid_name is None:
+                last = mid
+                # If the person has two names, the middle name which in this case is the second, becomes the last
+
+        print(f"{first.lower()}.{last.lower()}@gmail.com")  # prints out the email
+
+
+read_excel()
 
 def separate_gender(filename):
     """Separate data based on gender."""
@@ -56,6 +62,38 @@ def count_gender(filename):
     female_count = df[df['Gender'] == 'F'].shape[0]  # Count female students
     male_count = df[df['Gender'] == 'M'].shape[0]  # Count male students
     return female_count, male_count
+def save_to_excel(data, filename):
+    data.to_excel(filename, index=False)
+
+# Define a class for managing test files
+class TestFiles:
+    xlsx = r"C:\CodeLab\TestFiles.xlsx"
+
+# Separate data based on gender
+female_data, male_data = separate_gender(TestFiles.xlsx)
+
+# Count the number of female and male students
+female_count, male_count = count_gender(TestFiles.xlsx)
+
+# Output results
+print("Female data: ")
+print(female_data)
+print("Male data: ")
+print(male_data)
+print("Total number of female students", female_count)
+print("Total number of male students", male_count)
+
+# Ensure the output directory exists
+output_directory = r"C:\CodeLab"
+os.makedirs(output_directory, exist_ok=True)
+
+# Save the results to new Excel files
+female_output_file = os.path.join(output_directory, "FemaleStudents.xlsx")
+male_output_file = os.path.join(output_directory, "MaleStudents.xlsx")
+
+save_to_excel(female_data, female_output_file)
+save_to_excel(male_data, male_output_file)
+
 
 def list_names_with_special_characters(filename):
     """List names of students with special characters."""
